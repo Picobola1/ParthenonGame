@@ -49,11 +49,6 @@ while running:
         catusList.append((new_x,new_y))
         last_time = current
         
-
-    #collison = dinoHitBox.colliderect(catusHitBox)
-    #if collison:
-        #print("DINO TOUCHED CATUS")
-    #print(direction)
     catus_x -= 0.1
 
 
@@ -62,20 +57,26 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP]:
-        direction = 1
-        
+    if direction == 1:
         MidpointDino -= 0.3
-        
-        
-    elif keys[pygame.K_DOWN]:
-        
-        direction = -1
-        
+    if direction == -1:
         MidpointDino += 0.3
+    if direction == 0:
+        MidpointDino = Midpoint
+    #keys = pygame.key.get_pressed()
+    #if keys[pygame.K_UP]:
+        #direction = 1
         
-    else:
-        direction = 0
+        #MidpointDino -= 0.3
+        
+        
+    #elif keys[pygame.K_DOWN]:
+        
+        #direction = -1
+        
+        #MidpointDino += 0.3
+        
+    #else:
+        #direction = 0
     pygame.display.flip()
 pygame.quit
