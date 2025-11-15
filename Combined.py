@@ -9,6 +9,8 @@ pygame.init()
 Width = 800
 Height = 300
 last_time = 0
+clock = pygame.time.Clock()
+spawnTime = 0
 ## head
 cap = cv.VideoCapture(0)
 haar_cascade = cv.CascadeClassifier('haar_face.xml')
@@ -33,6 +35,7 @@ Midpoint = Height/2
 MidpointDino = Height/2
 Hand67 = False
 
+
 running = True
 pygame.display.Info()
 
@@ -41,12 +44,13 @@ catusList = [(400,Midpoint),(600,Midpoint),(800,Midpoint)]
 
 start_x = 50
 start_y = 50
-speed = 3
+speed = 100
 lives = 3
 
 
 DinoMove = True
 while True: 
+    deltaTime = clock.tick(60) / 1000
     if Hand67 == False:
         screen.fill((186, 149, 97))
     ret, img = cap.read()
@@ -79,7 +83,8 @@ while True:
     #screen.fill((48, 105, 152))
     ##this is while the game is going so infinte loop
     screen.blit(scaled_charachter, (start_x,MidpointDino))
-    screen.blit(catus, (catus_x,Midpoint))
+   
+    
     dinoHitBox = pygame.Rect(start_x, MidpointDino, scaled_charachter.get_width(), scaled_charachter.get_height())
     for i in range(lives):
         screen.blit(scaled_heart, (100 + i * 40,10))
@@ -87,7 +92,7 @@ while True:
         pygame.quit()
 
     for i in range(len(catusList)):
-        catusList[i] = (catusList[i][0] - speed, catusList[i][1])   
+        catusList[i] = (catusList[i][0] - speed * deltaTime, catusList[i][1])   
     
     for x,y in catusList:
         catusHitBox = pygame.Rect(x,y, catus.get_width(), catus.get_height())
@@ -96,14 +101,16 @@ while True:
             print("hit")
             catusList.remove((x, y))
             lives -= 1
-    current = pygame.time.get_ticks()
-    if current - last_time > 1500:
+   
+    spawnTime += deltaTime
+    if spawnTime > 1.5:
         new_x = Width + random.randint(0, 200)
         new_y = random.randint(0, Height - catus.get_height())   # 2000 ms = 2 seconds
         catusList.append((new_x,new_y))
-        last_time = current
         
-    catus_x -= 3
+        spawnTime = 0
+        
+    catus_x -= speed * deltaTime
 
 
     
