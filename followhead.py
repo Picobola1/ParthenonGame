@@ -1,13 +1,12 @@
-"""
-Face Detection
-"""
 import cv2 as cv
 import numpy as np
 
+"""
+Face and hand detection
+"""
+
 cap = cv.VideoCapture(0)
-haar_cascade = cv.CascadeClassifier('haar_face.xml')
-detectedx = 0
-detectedy = 0
+haar_face = cv.CascadeClassifier('haar_face.xml')
 widht = 0
 height = 0
 third = height // 3
@@ -25,7 +24,7 @@ while True:
     cv.line(img, (0, 2*third), (img.shape[1], 2*third), (255, 0, 0), thickness=2)
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    faces_react = haar_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3)
+    faces_react = haar_face.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3)
 
     for (x, y, w, h) in faces_react:
         cv.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), thickness=2)
