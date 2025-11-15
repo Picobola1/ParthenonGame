@@ -146,7 +146,7 @@ while True:
         spawnTime = 0
         
     catus_x -= speed * deltaTime
-    if Hand67:
+    if sixseven:
         playsound('67.mp3')
         random_color = random.randint(1, 255) 
         screen.fill((random_color, random_color, random_color))
@@ -154,7 +154,7 @@ while True:
         pygame.display.flip()
         time.sleep(5)
         pygame.display.flip()
-        Hand67 = False
+        sixseven = False
         pygame.display.flip()
 
     
