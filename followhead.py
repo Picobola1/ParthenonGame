@@ -7,7 +7,6 @@ import numpy as np
 cap = cv.VideoCapture(0)
 haar_cascade = cv.CascadeClassifier('haar_face.xml')
 
-# Detects face and draws a rectangle
 while True: 
     ret, img = cap.read()
     if not ret:
