@@ -21,22 +21,23 @@ while running:
     screen.fill((68,243,109))
     ##this is while the game is going so infinte loop
     screen.blit(scaled_charachter, (start_x,Midpoint))
-    print(direction)
-    #start_x += speed
+    #print(direction)
+   
+
 
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                direction = 1
-            elif event.key == pygame.K_DOWN:
-                direction = -1
-        ## if not up or down
-        elif event.type == pygame.KEYUP:
-            if event.key in (pygame.K_UP, pygame.K_DOWN):
-                direction = 0
+    
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP]:
+        direction = 1
+        Midpoint -= 0.5
+    elif keys[pygame.K_DOWN]:
+        direction = -1
+        Midpoint += 0.5
+    else:
+        direction = 0
     pygame.display.flip()
 pygame.quit
