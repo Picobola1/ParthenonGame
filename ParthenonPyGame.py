@@ -19,7 +19,8 @@ running = True
 pygame.display.Info()
 
 catus_x = Width
-catusList = [400,600,800]
+catusList = [(400,Midpoint),(600,Midpoint),(800,Midpoint)]
+
 start_x = 50
 start_y = 50
 speed = 0.1
@@ -33,16 +34,18 @@ while running:
     dinoHitBox = pygame.Rect(start_x, MidpointDino, scaled_charachter.get_width(), scaled_charachter.get_height())
    
     for i in range(len(catusList)):
-        catusList[i] -= speed   
+        catusList[i] = (catusList[i][0] - speed, catusList[i][1])   
     
-    for x in catusList:
-        catusHitBox = pygame.Rect(x, Midpoint, catus.get_width(), catus.get_height())
-        screen.blit(catus, (x, Midpoint))
+    for x,y in catusList:
+        catusHitBox = pygame.Rect(x,y, catus.get_width(), catus.get_height())
+        screen.blit(catus, (x,y))
         if dinoHitBox.colliderect(catusHitBox):
             print("you got hit")
     current = pygame.time.get_ticks()
-    if current - last_time > 1500:   # 2000 ms = 2 seconds
-        catusList.append(Width + random.randint(0, 200))
+    if current - last_time > 1500:
+        new_x = Width + random.randint(0, 200)
+        new_y = random.randint(0, Height - catus.get_height())   # 2000 ms = 2 seconds
+        catusList.append((new_x,new_y))
         last_time = current
         
 
