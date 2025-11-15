@@ -35,7 +35,7 @@ catusList = [(400,Midpoint),(600,Midpoint),(800,Midpoint)]
 
 start_x = 50
 start_y = 50
-speed = 0.1
+speed = 3
 
 
 DinoMove = True
@@ -86,7 +86,7 @@ while True:
         catusList.append((new_x,new_y))
         last_time = current
         
-    catus_x -= 0.1
+    catus_x -= 3
 
 
     
@@ -95,9 +95,9 @@ while True:
             running = False
     
     if directiony == 1:
-        MidpointDino -= 1
+        MidpointDino -= 5
     if directiony == -1:
-        MidpointDino += 1
+        MidpointDino += 5
     #if direction == 0:
         #MidpointDino = Midpoint
     #keys = pygame.key.get_pressed()
