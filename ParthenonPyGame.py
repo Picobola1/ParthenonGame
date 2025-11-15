@@ -6,6 +6,7 @@ Width = 800
 Height = 300
 last_time = 0
 
+
 screen = pygame.display.set_mode((Width,Height))
 direction = 0
 charachter = pygame.image.load("BlueDino1.png").convert()
