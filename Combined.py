@@ -20,6 +20,7 @@ detectedy = 0
 widht = 0
 height = 0
 third = height // 3
+sixseven = False
 
 directiony = 0
 
