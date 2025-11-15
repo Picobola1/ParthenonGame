@@ -25,9 +25,12 @@ while running:
     ##this is while the game is going so infinte loop
     screen.blit(scaled_charachter, (start_x,MidpointDino))
     screen.blit(catus, (catus_x,Midpoint))
-    dinoHitBox = pygame.Rect(MidpointDino,charachter.get_width(),charachter.get_height())
-    catusHitBox = pygame.Rect(catus_x,catus.get_width(),catus.get_height())
+    dinoHitBox = pygame.Rect(start_x, MidpointDino, scaled_charachter.get_width(), scaled_charachter.get_height())
+    catusHitBox = pygame.Rect(catus_x, Midpoint, catus.get_width(), catus.get_height())
+
     collison = dinoHitBox.colliderect(catusHitBox)
+    if collison:
+        print("DINO TOUCHED CATUS")
     #print(direction)
     catus_x -= 0.1
 
