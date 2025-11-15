@@ -1,12 +1,26 @@
+import os
+os.environ["GLOG_minloglevel"] = "3"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+from absl import logging
+logging.set_verbosity(logging.ERROR)
 import pygame
 import random
 import cv2 as cv
-import numpy as np
-import time
+import time as time
+
+
 import mediapipe as mp
+import numpy as np
+import sys
 from playsound import playsound
 
 pygame.init()
+#class DummyFile(object):
+    #def write(self, x): pass
+    #def flush(self): pass
+
+#stderr_original = sys.stderr
+#sys.stderr = DummyFile()
 Width = 800
 Height = 300
 last_time = 0
@@ -20,8 +34,21 @@ detectedy = 0
 widht = 0
 height = 0
 third = height // 3
+
+#67
+mp_hands = mp.solutions.hands
+mp_drawing = mp.solutions.drawing_utils
 sixseven = False
-# i need to recommit
+sensibility = 40
+cap = cv.VideoCapture(0)
+prev_y1, prev_y2 = None, None
+# function from 67
+def palm_up(hand):
+    wrist = hand.landmark[0]
+    middle_mcp = hand.landmark[9]
+    return middle_mcp.y < wrist.y
+
+
 directiony = 0
 
 screen = pygame.display.set_mode((Width,Height))
@@ -32,12 +59,10 @@ heart = pygame.image.load("Heart.png").convert_alpha()
 Image67 = pygame.image.load("67.jpg").convert_alpha()
 scaled_charachter = pygame.transform.scale(charachter,(60,60))
 scaled_heart = pygame.transform.scale(heart,(40,40))
-sensibility = 15
+
 Midpoint = Height/2
 MidpointDino = Height/2
 Hand67 = False
-mp_hands = mp.solutions.hands
-mp_drawing = mp.solutions.drawing_utils
 
 
 running = True
@@ -51,14 +76,16 @@ start_y = 50
 speed = 100
 lives = 3
 
-
+hands = mp_hands.Hands(max_num_hands=2)
 DinoMove = True
 while True: 
     deltaTime = clock.tick(60) / 1000
-    if Hand67 == False:
+    if sixseven == False:
         screen.fill((186, 149, 97))
     ret, img = cap.read()
-
+    #67
+    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)   
+    results = hands.process(img)
     width = img.shape[1]
     height = img.shape[0]
     third = height // 3
@@ -68,17 +95,14 @@ while True:
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     faces_react = haar_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3)
-
-    
+    #67 array's
+    wrist_ponts = []
+    palms_up_list = []
 
     for (x, y, w, h) in faces_react:
         cv.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), thickness=2)
         detectedx = x
         detectedy = y
-    results = mp_hands.Hands().process(img)
-
-    wrist_ponts = []
-
     img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
@@ -90,24 +114,23 @@ while True:
             h, w, _ = img.shape
             px, py = int(x * w), int(y * h)
             wrist_ponts.append((px, py))
-            cv.circle(img, (px, py), 6, (0,255,255), -1)
+            palms_up_list.append(palm_up(hand_landmarks))
 
+            cv.circle(img, (px, py), 6, (0,255,255), -1)
     if len(wrist_ponts) == 2:
         (x1, y1), (x2, y2) = wrist_ponts
 
         cv.line(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
-        if prev_y is not None:
-            dy = y - prev_y
+        if prev_y1 is not None and prev_y2 is not None:
+            dy1 = y1 - prev_y1
+            dy2 = y2 - prev_y2
 
-            if abs(dy) > sensibility:
+            if abs(dy1) > sensibility or abs(dy2) > sensibility:
                 sixseven = True
-            else:
-                sixseven = False
-
-        prev_y = y
-        print(sixseven)
-
+        prev_y1, prev_y2 = y1, y2
+        print(f'sixseven= {sixseven}')
+        #sixseven = False
     if detectedy < third:
         directiony = 1
     elif detectedy > 2*third:
@@ -147,16 +170,7 @@ while True:
         spawnTime = 0
         
     catus_x -= speed * deltaTime
-    if sixseven:
-        playsound('67.mp3')
-        random_color = random.randint(1, 255) 
-        screen.fill((random_color, random_color, random_color))
-        screen.blit(Image67, (150,Midpoint))
-        pygame.display.flip()
-        time.sleep(5)
-        pygame.display.flip()
-        sixseven = False
-        pygame.display.flip()
+
 
     
     for event in pygame.event.get():
@@ -167,6 +181,17 @@ while True:
         MidpointDino -= 5
     if directiony == -1:
         MidpointDino += 5
+
+    if sixseven:
+        playsound('67.mp3')
+        random_color = random.randint(1, 255) 
+        screen.fill((random_color, random_color, random_color))
+        screen.blit(Image67, (150,Midpoint))
+        pygame.display.flip()
+        time.sleep(5)
+        pygame.display.flip()
+        sixseven = False
+        pygame.display.flip()
     #if direction == 0:
         #MidpointDino = Midpoint
     #keys = pygame.key.get_pressed()
@@ -184,6 +209,7 @@ while True:
         
     #else:
         #direction = 0
+
     pygame.display.flip()
     pygame.quit
     cv.imshow('frame-1', img)
