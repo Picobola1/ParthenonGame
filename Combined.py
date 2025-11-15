@@ -65,17 +65,6 @@ while True:
         directiony = 0
 
     print(directiony)
-
-    cv.imshow('frame-1', img)
-
-    if cv.waitKey(1) & 0xFF == ord('q'):
-        break
-    if not ret:
-        break
-
-cap.release()
-cv.destroyAllWindows()
-while running:
     screen.fill((48, 105, 152))
     ##this is while the game is going so infinte loop
     screen.blit(scaled_charachter, (start_x,MidpointDino))
@@ -105,12 +94,12 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
-    if direction == 1:
-        MidpointDino -= 0.3
-    if direction == -1:
-        MidpointDino += 0.3
-    if direction == 0:
-        MidpointDino = Midpoint
+    if directiony == 1:
+        MidpointDino -= 1
+    if directiony == -1:
+        MidpointDino += 1
+    #if direction == 0:
+        #MidpointDino = Midpoint
     #keys = pygame.key.get_pressed()
     #if keys[pygame.K_UP]:
         #direction = 1
@@ -127,4 +116,15 @@ while running:
     #else:
         #direction = 0
     pygame.display.flip()
-pygame.quit
+    pygame.quit
+    cv.imshow('frame-1', img)
+
+    if cv.waitKey(1) & 0xFF == ord('q'):
+        break
+    if not ret:
+        break
+
+cap.release()
+cv.destroyAllWindows()
+
+    
