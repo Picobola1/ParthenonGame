@@ -7,22 +7,29 @@ Height = 300
 screen = pygame.display.set_mode((Width,Height))
 direction = 0
 charachter = pygame.image.load("BlueDino1.png").convert()
+catus = pygame.image.load("Cactus.png").convert()
 scaled_charachter = pygame.transform.scale(charachter,(100,100))
 
 Midpoint = Height/2
+MidpointDino = Height/2
 
 running = True
 pygame.display.Info()
 
+catus_x = 500
 start_x = 50
 start_y = 50
 speed = 0.1
 while running:
-    screen.fill((68,243,109))
+    screen.fill((48, 105, 152))
     ##this is while the game is going so infinte loop
-    screen.blit(scaled_charachter, (start_x,Midpoint))
+    screen.blit(scaled_charachter, (start_x,MidpointDino))
+    screen.blit(catus, (catus_x,Midpoint))
+    dinoHitBox = pygame.Rect(MidpointDino,charachter.get_width(),charachter.get_height())
+    catusHitBox = pygame.Rect(catus_x,catus.get_width(),catus.get_height())
+    collison = dinoHitBox.colliderect(catusHitBox)
     #print(direction)
-   
+    catus_x -= 0.1
 
 
     
@@ -33,10 +40,10 @@ while running:
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP]:
         direction = 1
-        Midpoint -= 0.5
+        MidpointDino -= 0.5
     elif keys[pygame.K_DOWN]:
         direction = -1
-        Midpoint += 0.5
+        MidpointDino += 0.5
     else:
         direction = 0
     pygame.display.flip()
