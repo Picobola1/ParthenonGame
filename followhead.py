@@ -34,10 +34,10 @@ while True:
     
     if detectedy < third:
         directiony = 1
-    elif detectedy > third & detectedy < 2*third:
-        directiony = 0
     elif detectedy > 2*third:
         directiony = -1
+    else:
+        directiony = 0
 
     print(directiony)
 
