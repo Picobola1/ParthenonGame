@@ -33,7 +33,7 @@ start_x = 50
 start_y = 50
 speed = 0.1
 lives = 3
-hit_cooldown = 0.5
+
 
 DinoMove = True
 while running:

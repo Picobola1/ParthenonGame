@@ -2,6 +2,8 @@ import pygame
 import random
 import cv2 as cv
 import numpy as np
+import time
+from playsound import playsound
 
 pygame.init()
 Width = 800
@@ -20,12 +22,16 @@ directiony = 0
 
 screen = pygame.display.set_mode((Width,Height))
 direction = 0
-charachter = pygame.image.load("BlueDino1.png").convert()
-catus = pygame.image.load("Cactus.png").convert()
+charachter = pygame.image.load("BlueDino1.png").convert_alpha()
+catus = pygame.image.load("Cactus.png").convert_alpha()
+heart = pygame.image.load("Heart.png").convert_alpha()
+Image67 = pygame.image.load("67.jpg").convert_alpha()
 scaled_charachter = pygame.transform.scale(charachter,(60,60))
+scaled_heart = pygame.transform.scale(heart,(40,40))
 
 Midpoint = Height/2
 MidpointDino = Height/2
+Hand67 = False
 
 running = True
 pygame.display.Info()
@@ -36,10 +42,13 @@ catusList = [(400,Midpoint),(600,Midpoint),(800,Midpoint)]
 start_x = 50
 start_y = 50
 speed = 3
+lives = 3
 
 
 DinoMove = True
 while True: 
+    if Hand67 == False:
+        screen.fill((186, 149, 97))
     ret, img = cap.read()
 
     width = img.shape[1]
@@ -51,6 +60,8 @@ while True:
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     faces_react = haar_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3)
+
+    
 
     for (x, y, w, h) in faces_react:
         cv.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), thickness=2)
@@ -65,12 +76,16 @@ while True:
         directiony = 0
 
     print(directiony)
-    screen.fill((48, 105, 152))
+    #screen.fill((48, 105, 152))
     ##this is while the game is going so infinte loop
     screen.blit(scaled_charachter, (start_x,MidpointDino))
     screen.blit(catus, (catus_x,Midpoint))
     dinoHitBox = pygame.Rect(start_x, MidpointDino, scaled_charachter.get_width(), scaled_charachter.get_height())
-   
+    for i in range(lives):
+        screen.blit(scaled_heart, (100 + i * 40,10))
+    if lives == 0:
+        pygame.quit()
+
     for i in range(len(catusList)):
         catusList[i] = (catusList[i][0] - speed, catusList[i][1])   
     
@@ -78,7 +93,9 @@ while True:
         catusHitBox = pygame.Rect(x,y, catus.get_width(), catus.get_height())
         screen.blit(catus, (x,y))
         if dinoHitBox.colliderect(catusHitBox):
-            print("you got hit")
+            print("hit")
+            catusList.remove((x, y))
+            lives -= 1
     current = pygame.time.get_ticks()
     if current - last_time > 1500:
         new_x = Width + random.randint(0, 200)
