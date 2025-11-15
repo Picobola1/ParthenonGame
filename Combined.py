@@ -79,4 +79,8 @@ while running:
     #else:
         #direction = 0
     pygame.display.flip()
+<<<<<<< HEAD
 pygame.quit
+=======
+pygame.quit
+>>>>>>> 1b08c420d3c73342316f3484403a670a8b43c746
