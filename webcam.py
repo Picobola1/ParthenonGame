@@ -1,5 +1,5 @@
 """
-Start the camera for the game!
+Setup the camera for the game!
 """
 import cv2 as cv
 
