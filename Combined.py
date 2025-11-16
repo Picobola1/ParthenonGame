@@ -13,7 +13,7 @@ import time as time
 import mediapipe as mp
 import numpy as np
 import sys
-from playsound3 import playsound
+from playsound import playsound
 
 pygame.init()
 #class DummyFile(object):
@@ -96,6 +96,7 @@ DinoMove = True
 gameOver = False
 inMenu = True
 running = False
+
 
 
 def gameOverScreen():
@@ -280,10 +281,20 @@ while True:
                 running = False
         
         if directiony == 1:
-            MidpointDino -= 5
+            if DinoMove:
+                MidpointDino -= 5
+            if 0 > MidpointDino:
+                DinoMove = False
+                MidpointDino += 3
+                
+            DinoMove = True
         if directiony == -1:
-            MidpointDino += 5
-
+            if DinoMove:
+                MidpointDino += 3
+            if MidpointDino > Height - scaled_charachter.get_height():
+                DinoMove = False
+                MidpointDino -= 3
+            DinoMove = True
         if sixseven:
             threading.Thread(target=playsound, args=('67.mp3',), daemon=True).start()
     
