@@ -195,6 +195,7 @@ while True:
 
     if sixseven:
         threading.Thread(target=playsound, args=('67.mp3',), daemon=True).start()
+        lives += 1
         #random_color = random.randint(1, 255) 
         #screen.fill((random_color, random_color, random_color))
         if meme_img is not None and meme_start_time is None:
