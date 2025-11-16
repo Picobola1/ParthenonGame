@@ -58,6 +58,7 @@ charachter = pygame.image.load("BlueDino1.png").convert_alpha()
 catus = pygame.image.load("Cactus.png").convert_alpha()
 heart = pygame.image.load("Heart.png").convert_alpha()
 Image67 = pygame.image.load("67.jpg").convert_alpha()
+chicken = pygame.image.load("chickenStar.png").convert_alpha()
 scaled_charachter = pygame.transform.scale(charachter,(60,60))
 scaled_heart = pygame.transform.scale(heart,(40,40))
 
@@ -72,10 +73,16 @@ pygame.display.Info()
 catus_x = Width
 catusList = [(400,Midpoint),(600,Midpoint),(800,Midpoint)]
 
+star_x = Width
+starList = [(500 + random.randint(0,200), random.randint(0, Height-50)) for _ in range(2)]
+scaled_star = pygame.transform.scale(chicken, (40,40))
+font = pygame.font.SysFont(None, 36)
+
 start_x = 50
 start_y = 50
 speed = 100
 lives = 5
+starsCollected = 0
 
 meme_img_original = cv.imread('67.jpg')         # OpenCV version of the meme
 meme_window_name = "6-7"
@@ -89,6 +96,7 @@ hands = mp_hands.Hands(
     min_tracking_confidence=0.6     
 )
 DinoMove = True
+
 while True: 
     deltaTime = clock.tick(60) / 1000
     if sixseven == False:
@@ -160,6 +168,8 @@ while True:
         screen.blit(scaled_heart, (100 + i * 40,10))
     if lives == 0:
         pygame.quit()
+    
+    #Moving Cactus
 
     for i in range(len(catusList)):
         catusList[i] = (catusList[i][0] - speed * deltaTime, catusList[i][1])   
@@ -177,12 +187,27 @@ while True:
         new_x = Width + random.randint(0, 200)
         new_y = random.randint(0, Height - catus.get_height())   # 2000 ms = 2 seconds
         catusList.append((new_x,new_y))
+
+        new_x = Width + random.randint(0, 200)
+        new_y = random.randint(0, Height - scaled_star.get_height())
+        starList.append((new_x, new_y))
         
         spawnTime = 0
         
     catus_x -= speed * deltaTime
 
+    for i in range(len(starList)):
+        starList[i] = (starList[i][0] - speed * deltaTime, starList[i][1])
+    
+    for x, y in starList:
+        starHitBox = pygame.Rect(x, y, scaled_star.get_width(), scaled_star.get_height())
+        screen.blit(scaled_star, (x, y))
+        if dinoHitBox.colliderect(starHitBox):
+            starsCollected += 1
+            threading.Thread(target=playsound, args=('coin.mp3',), daemon=True).start()
+            starList.remove((x, y))
 
+            
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -233,6 +258,12 @@ while True:
     if meme_start_time is not None and time.time() - meme_start_time > 3.0:
         cv.destroyWindow(meme_window_name)
         meme_start_time = None
+
+    hud = np.zeros((100, 200, 3), dtype=np.uint8)
+    cv.putText(hud, f"Stars: {starsCollected}", (10,50),
+           cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,255), 2)
+    cv.imshow("Stars HUD", hud)
+
 
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
