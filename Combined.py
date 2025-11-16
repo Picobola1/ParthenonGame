@@ -13,7 +13,7 @@ import time as time
 import mediapipe as mp
 import numpy as np
 import sys
-from playsound import playsound
+from playsound3 import playsound
 
 pygame.init()
 #class DummyFile(object):
@@ -94,7 +94,9 @@ hands = mp_hands.Hands(
 DinoMove = True
 
 gameOver = False
-running = True
+inMenu = True
+running = False
+
 
 def gameOverScreen():
     screen.fill((0,0,0))
@@ -109,206 +111,231 @@ def gameOverScreen():
     screen.blit(restart_text, (Width // 2 - restart_text.get_width() // 2, Height // 2 + 20))
     pygame.display.flip()
 
+def menu():
+    screen.fill((0,0,0))
+    menu_text = font.render("BrainRot Dino", True, (0,255,0))
+    description_text = font.render("Collect nuggets while you exercise!", True, (255,0,0))
+    start_text = font.render("E to Start or Q to Exit", True, (255,0,0))
 
-while running == True:
-    if gameOver:
-        gameOverScreen()
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q:
-                        pygame.quit()
-                        sys.exit()
-                    elif event.key == pygame.K_r:
-                        lives = 5
-                        starsCollected = 0
-                        MidpointDino = Height / 2
-                        catusList = [(400, Midpoint), (600, Midpoint), (800, Midpoint)]
-                        starList = [(500 + random.randint(0, 200), random.randint(0, Height - 50)) for _ in range(2)]
-                        gameOver = False
-                        break
-            pygame.time.wait(100)
-            if not gameOver:
-                break
-        
-
-    deltaTime = clock.tick(60) / 1000
-    if sixseven == False:
-        screen.fill((186, 149, 97))
-    ret, img = cap.read()
-    #67
-    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)   
-    results = hands.process(img)
-    width = img.shape[1]
-    height = img.shape[0]
-    third = height // 3
-
-    cv.line(img, (0, third), (img.shape[1], third), (255, 0, 0), thickness=2)
-    cv.line(img, (0, 2*third), (img.shape[1], 2*third), (255, 0, 0), thickness=2)
-
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    faces_react = haar_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3)
-    #67 array's
-    wrist_ponts = []
-    palms_up_list = []
-
-    for (x, y, w, h) in faces_react:
-        cv.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), thickness=2)
-        detectedx = x
-        detectedy = y
-    img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
-            mp_drawing.draw_landmarks(img, hand_landmarks, connections = mp_hands.HAND_CONNECTIONS)
-
-            x = hand_landmarks.landmark[0].x
-            y = hand_landmarks.landmark[0].y
-
-            h, w, _ = img.shape
-            px, py = int(x * w), int(y * h)
-            wrist_ponts.append((px, py))
-            palms_up_list.append(palm_up(hand_landmarks))
-
-            cv.circle(img, (px, py), 6, (0,255,255), -1)
-    if len(wrist_ponts) == 2:
-        (x1, y1), (x2, y2) = wrist_ponts
-
-        cv.line(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
-
-        if prev_y1 is not None and prev_y2 is not None:
-            dy1 = y1 - prev_y1
-            dy2 = y2 - prev_y2
-
-            if abs(dy1) > sensibility or abs(dy2) > sensibility:
-                sixseven = True
-        prev_y1, prev_y2 = y1, y2
-        #print(f'sixseven= {sixseven}')
-        #sixseven = False
-    if detectedy < third:
-        directiony = 1
-    elif detectedy > 2*third:
-        directiony = -1
-    else:
-        directiony = 0
-
-    #print(directiony)
-    #screen.fill((48, 105, 152))
-    ##this is while the game is going so infinte loop
-    screen.blit(scaled_charachter, (start_x,MidpointDino))
-   
-    
-    dinoHitBox = pygame.Rect(start_x, MidpointDino, scaled_charachter.get_width(), scaled_charachter.get_height())
-    for i in range(lives):
-        screen.blit(scaled_heart, (100 + i * 40,10))
-    if lives == 0 and not gameOver:
-        gameOver = True
-        gameOverScreen()
-    
-    #Moving Cactus
-
-    for i in range(len(catusList)):
-        catusList[i] = (catusList[i][0] - speed * deltaTime, catusList[i][1])   
-    
-    for x,y in catusList:
-        catusHitBox = pygame.Rect(x,y, catus.get_width(), catus.get_height())
-        screen.blit(catus, (x,y))
-        if dinoHitBox.colliderect(catusHitBox):
-            threading.Thread(target=playsound, args=('hit.mp3',), daemon=True).start()
-            catusList.remove((x, y))
-            lives -= 1
-
-   
-    spawnTime += deltaTime
-    if spawnTime > 1.5:
-        new_x = Width + random.randint(0, 200)
-        new_y = random.randint(0, Height - catus.get_height())   # 2000 ms = 2 seconds
-        catusList.append((new_x,new_y))
-
-        new_x = Width + random.randint(0, 200)
-        new_y = random.randint(0, Height - scaled_star.get_height())
-        starList.append((new_x, new_y))
-        
-        spawnTime = 0
-        
-    catus_x -= speed * deltaTime
-
-    for i in range(len(starList)):
-        starList[i] = (starList[i][0] - speed * deltaTime, starList[i][1])
-    
-    for x, y in starList:
-        starHitBox = pygame.Rect(x, y, scaled_star.get_width(), scaled_star.get_height())
-        screen.blit(scaled_star, (x, y))
-        if dinoHitBox.colliderect(starHitBox):
-            starsCollected += 1
-            threading.Thread(target=playsound, args=('coin.mp3',), daemon=True).start()
-            starList.remove((x, y))
-
-            
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    
-    if directiony == 1:
-        MidpointDino -= 5
-    if directiony == -1:
-        MidpointDino += 5
-
-    if sixseven:
-        threading.Thread(target=playsound, args=('67.mp3',), daemon=True).start()
- 
-        lives = min(lives+1, 5)
-
-
-        #screen.fill((random_color, random_color, random_color))
-        if meme_img is not None and meme_start_time is None:
-            meme_start_time = time.time()
-            cv.imshow(meme_window_name, meme_img)
-            cv.moveWindow(meme_window_name, 0, 0)
-
-        #screen.blit(Image67, (150,Midpoint))
-        #pygame.display.flip()
-        #pygame.display.flip()
-        sixseven = False
-        #pygame.display.flip()
-    #if direction == 0:
-        #MidpointDino = Midpoint
-    #keys = pygame.key.get_pressed()
-    #if keys[pygame.K_UP]:
-        #direction = 1
-        
-        #MidpointDino -= 0.3
-        
-        
-    #elif keys[pygame.K_DOWN]:
-        
-        #direction = -1
-        
-        #MidpointDino += 0.3
-        
-    #else:
-        #direction = 0
-
+    screen.blit(menu_text, (Width // 2 - menu_text.get_width() // 2, Height // 2 - 60))
+    screen.blit(description_text, (Width // 2 - description_text.get_width() // 2, Height // 2 - 20))
+    screen.blit(start_text, (Width // 2 - start_text.get_width() // 2, Height // 2 + 20))
     pygame.display.flip()
 
-    cv.imshow('frame-1', img)
-    cv.moveWindow('frame-1', 600, 100)
-    if meme_start_time is not None and time.time() - meme_start_time > 3.0:
-        cv.destroyWindow(meme_window_name)
-        meme_start_time = None
+while True:
+    if inMenu:
+        menu()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    running = True
+                    inMenu = False
+                elif event.key == pygame.K_q:
+                    pygame.quit()
+                    sys.exit()
+        continue
 
-    hud = np.zeros((100, 200, 3), dtype=np.uint8)
-    cv.putText(hud, f"Stars: {starsCollected}", (10,50),
-           cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,255), 2)
-    cv.imshow("Stars HUD", hud)
+    if running == True:
+        if gameOver:
+            gameOverScreen()
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_q:
+                            pygame.quit()
+                            sys.exit()
+                        elif event.key == pygame.K_r:
+                            lives = 5
+                            starsCollected = 0
+                            MidpointDino = Height / 2
+                            catusList = [(400, Midpoint), (600, Midpoint), (800, Midpoint)]
+                            starList = [(500 + random.randint(0, 200), random.randint(0, Height - 50)) for _ in range(2)]
+                            gameOver = False
+                            break
+                if not gameOver:
+                    break
+            
 
-    if cv.waitKey(1) & 0xFF == ord('q'):
-        break
-    if not ret:
-        break
+        deltaTime = clock.tick(60) / 1000
+        if sixseven == False:
+            screen.fill((186, 149, 97))
+        ret, img = cap.read()
+        #67
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)   
+        results = hands.process(img)
+        width = img.shape[1]
+        height = img.shape[0]
+        third = height // 3
+
+        cv.line(img, (0, third), (img.shape[1], third), (255, 0, 0), thickness=2)
+        cv.line(img, (0, 2*third), (img.shape[1], 2*third), (255, 0, 0), thickness=2)
+
+        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        faces_react = haar_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3)
+        #67 array's
+        wrist_ponts = []
+        palms_up_list = []
+
+        for (x, y, w, h) in faces_react:
+            cv.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), thickness=2)
+            detectedx = x
+            detectedy = y
+        img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
+        if results.multi_hand_landmarks:
+            for hand_landmarks in results.multi_hand_landmarks:
+                mp_drawing.draw_landmarks(img, hand_landmarks, connections = mp_hands.HAND_CONNECTIONS)
+
+                x = hand_landmarks.landmark[0].x
+                y = hand_landmarks.landmark[0].y
+
+                h, w, _ = img.shape
+                px, py = int(x * w), int(y * h)
+                wrist_ponts.append((px, py))
+                palms_up_list.append(palm_up(hand_landmarks))
+
+                cv.circle(img, (px, py), 6, (0,255,255), -1)
+        if len(wrist_ponts) == 2:
+            (x1, y1), (x2, y2) = wrist_ponts
+
+            cv.line(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+
+            if prev_y1 is not None and prev_y2 is not None:
+                dy1 = y1 - prev_y1
+                dy2 = y2 - prev_y2
+
+                if abs(dy1) > sensibility or abs(dy2) > sensibility:
+                    sixseven = True
+            prev_y1, prev_y2 = y1, y2
+            #print(f'sixseven= {sixseven}')
+            #sixseven = False
+        if detectedy < third:
+            directiony = 1
+        elif detectedy > 2*third:
+            directiony = -1
+        else:
+            directiony = 0
+
+        #print(directiony)
+        #screen.fill((48, 105, 152))
+        ##this is while the game is going so infinte loop
+        screen.blit(scaled_charachter, (start_x,MidpointDino))
+    
+        
+        dinoHitBox = pygame.Rect(start_x, MidpointDino, scaled_charachter.get_width(), scaled_charachter.get_height())
+        for i in range(lives):
+            screen.blit(scaled_heart, (100 + i * 40,10))
+        if lives == 0 and not gameOver:
+            gameOver = True
+            gameOverScreen()
+        
+        #Moving Cactus
+
+        for i in range(len(catusList)):
+            catusList[i] = (catusList[i][0] - speed * deltaTime, catusList[i][1])   
+        
+        for x,y in catusList:
+            catusHitBox = pygame.Rect(x,y, catus.get_width(), catus.get_height())
+            screen.blit(catus, (x,y))
+            if dinoHitBox.colliderect(catusHitBox):
+                threading.Thread(target=playsound, args=('hit.mp3',), daemon=True).start()
+                catusList.remove((x, y))
+                lives -= 1
+
+    
+        spawnTime += deltaTime
+        if spawnTime > 1.5:
+            new_x = Width + random.randint(0, 200)
+            new_y = random.randint(0, Height - catus.get_height())   # 2000 ms = 2 seconds
+            catusList.append((new_x,new_y))
+
+            new_x = Width + random.randint(0, 200)
+            new_y = random.randint(0, Height - scaled_star.get_height())
+            starList.append((new_x, new_y))
+            
+            spawnTime = 0
+            
+        catus_x -= speed * deltaTime
+
+        for i in range(len(starList)):
+            starList[i] = (starList[i][0] - speed * deltaTime, starList[i][1])
+        
+        for x, y in starList:
+            starHitBox = pygame.Rect(x, y, scaled_star.get_width(), scaled_star.get_height())
+            screen.blit(scaled_star, (x, y))
+            if dinoHitBox.colliderect(starHitBox):
+                starsCollected += 1
+                threading.Thread(target=playsound, args=('coin.mp3',), daemon=True).start()
+                starList.remove((x, y))
+
+                
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        
+        if directiony == 1:
+            MidpointDino -= 5
+        if directiony == -1:
+            MidpointDino += 5
+
+        if sixseven:
+            threading.Thread(target=playsound, args=('67.mp3',), daemon=True).start()
+    
+            lives = min(lives+1, 5)
+
+
+            #screen.fill((random_color, random_color, random_color))
+            if meme_img is not None and meme_start_time is None:
+                meme_start_time = time.time()
+                cv.imshow(meme_window_name, meme_img)
+                cv.moveWindow(meme_window_name, 0, 0)
+
+            #screen.blit(Image67, (150,Midpoint))
+            #pygame.display.flip()
+            #pygame.display.flip()
+            sixseven = False
+            #pygame.display.flip()
+        #if direction == 0:
+            #MidpointDino = Midpoint
+        #keys = pygame.key.get_pressed()
+        #if keys[pygame.K_UP]:
+            #direction = 1
+            
+            #MidpointDino -= 0.3
+            
+            
+        #elif keys[pygame.K_DOWN]:
+            
+            #direction = -1
+            
+            #MidpointDino += 0.3
+            
+        #else:
+            #direction = 0
+
+        pygame.display.flip()
+
+        cv.imshow('frame-1', img)
+        cv.moveWindow('frame-1', 600, 100)
+        if meme_start_time is not None and time.time() - meme_start_time > 3.0:
+            cv.destroyWindow(meme_window_name)
+            meme_start_time = None
+
+        hud = np.zeros((100, 200, 3), dtype=np.uint8)
+        cv.putText(hud, f"Stars: {starsCollected}", (10,50),
+            cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,255), 2)
+        cv.imshow("Stars HUD", hud)
+
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+        if not ret:
+            break
 
 cap.release()
 cv.destroyAllWindows()
