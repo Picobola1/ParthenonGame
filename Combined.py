@@ -183,7 +183,7 @@ while True:
         MidpointDino += 5
 
     if sixseven:
-        playsound('67.mp3')
+        ##playsound('67.mp3')
         random_color = random.randint(1, 255) 
         screen.fill((random_color, random_color, random_color))
         screen.blit(Image67, (150,Midpoint))
