@@ -10,7 +10,6 @@ import random
 import cv2 as cv
 import time as time
 
-
 import mediapipe as mp
 import numpy as np
 import sys
@@ -49,7 +48,6 @@ def palm_up(hand):
     middle_mcp = hand.landmark[9]
     return middle_mcp.y < wrist.y
 
-
 directiony = 0
 
 screen = pygame.display.set_mode((Width,Height))
@@ -66,8 +64,6 @@ Midpoint = Height/2
 MidpointDino = Height/2
 Hand67 = False
 
-
-running = True
 pygame.display.Info()
 
 catus_x = Width
@@ -97,7 +93,48 @@ hands = mp_hands.Hands(
 )
 DinoMove = True
 
-while True: 
+gameOver = False
+running = True
+
+def gameOverScreen():
+    screen.fill((0,0,0))
+    game_over_text = font.render("Game Over!", True, (255,0,0))
+    score_text = font.render(f"Starts: {starsCollected}", True, (255,0,0))
+    restart_text = font.render("R to Restart or Q to Exit", True, (255,0,0))
+
+    running = False
+
+    screen.blit(game_over_text, (Width // 2 - game_over_text.get_width() // 2, Height // 2 - 60))
+    screen.blit(score_text, (Width // 2 - score_text.get_width() // 2, Height // 2 - 20))
+    screen.blit(restart_text, (Width // 2 - restart_text.get_width() // 2, Height // 2 + 20))
+    pygame.display.flip()
+
+
+while running == True:
+    if gameOver:
+        gameOverScreen()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        pygame.quit()
+                        sys.exit()
+                    elif event.key == pygame.K_r:
+                        lives = 5
+                        starsCollected = 0
+                        MidpointDino = Height / 2
+                        catusList = [(400, Midpoint), (600, Midpoint), (800, Midpoint)]
+                        starList = [(500 + random.randint(0, 200), random.randint(0, Height - 50)) for _ in range(2)]
+                        gameOver = False
+                        break
+            pygame.time.wait(100)
+            if not gameOver:
+                break
+        
+
     deltaTime = clock.tick(60) / 1000
     if sixseven == False:
         screen.fill((186, 149, 97))
@@ -166,8 +203,9 @@ while True:
     dinoHitBox = pygame.Rect(start_x, MidpointDino, scaled_charachter.get_width(), scaled_charachter.get_height())
     for i in range(lives):
         screen.blit(scaled_heart, (100 + i * 40,10))
-    if lives == 0:
-        pygame.quit()
+    if lives == 0 and not gameOver:
+        gameOver = True
+        gameOverScreen()
     
     #Moving Cactus
 
@@ -178,9 +216,10 @@ while True:
         catusHitBox = pygame.Rect(x,y, catus.get_width(), catus.get_height())
         screen.blit(catus, (x,y))
         if dinoHitBox.colliderect(catusHitBox):
-            #print("hit")
+            threading.Thread(target=playsound, args=('hit.mp3',), daemon=True).start()
             catusList.remove((x, y))
             lives -= 1
+
    
     spawnTime += deltaTime
     if spawnTime > 1.5:
@@ -252,7 +291,7 @@ while True:
         #direction = 0
 
     pygame.display.flip()
-    pygame.quit
+
     cv.imshow('frame-1', img)
     cv.moveWindow('frame-1', 600, 100)
     if meme_start_time is not None and time.time() - meme_start_time > 3.0:
@@ -263,7 +302,6 @@ while True:
     cv.putText(hud, f"Stars: {starsCollected}", (10,50),
            cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,255), 2)
     cv.imshow("Stars HUD", hud)
-
 
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
