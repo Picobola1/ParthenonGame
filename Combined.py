@@ -1,3 +1,4 @@
+# A short segment to avoid annoying comments ;D
 import os
 os.environ["GLOG_minloglevel"] = "3"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -8,25 +9,30 @@ import random
 import cv2 as cv
 import time as time
 
-
+#Needed Libraries
 import mediapipe as mp
 import numpy as np
 import sys
-from playsound import playsound
+from playsound3 import playsound
 
+#Init the game
 pygame.init()
-#class DummyFile(object):
-    #def write(self, x): pass
-    #def flush(self): pass
+"""
+class DummyFile(object):
+    def write(self, x): pass
+    def flush(self): pass
 
-#stderr_original = sys.stderr
-#sys.stderr = DummyFile()
+stderr_original = sys.stderr
+sys.stderr = DummyFile()
+"""
+# Screen Size
 Width = 800
 Height = 300
 last_time = 0
 clock = pygame.time.Clock()
 spawnTime = 0
-## head
+
+# Head Tracking Needed Variables
 cap = cv.VideoCapture(0)
 haar_cascade = cv.CascadeClassifier('haar_face.xml')
 detectedx = 0
@@ -42,15 +48,16 @@ sixseven = False
 sensibility = 40
 cap = cv.VideoCapture(0)
 prev_y1, prev_y2 = None, None
-# function from 67
+
+# Palm funtion for 67
 def palm_up(hand):
     wrist = hand.landmark[0]
     middle_mcp = hand.landmark[9]
     return middle_mcp.y < wrist.y
 
-
 directiony = 0
 
+# Elements needed for the game
 screen = pygame.display.set_mode((Width,Height))
 direction = 0
 charachter = pygame.image.load("BlueDino1.png").convert_alpha()
@@ -63,7 +70,6 @@ scaled_heart = pygame.transform.scale(heart,(40,40))
 Midpoint = Height/2
 MidpointDino = Height/2
 Hand67 = False
-
 
 running = True
 pygame.display.Info()
@@ -83,6 +89,8 @@ while True:
     if sixseven == False:
         screen.fill((186, 149, 97))
     ret, img = cap.read()
+    if not ret:
+        break
     #67
     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)   
     results = hands.process(img)
@@ -192,6 +200,7 @@ while True:
         pygame.display.flip()
         sixseven = False
         pygame.display.flip()
+    """
     #if direction == 0:
         #MidpointDino = Midpoint
     #keys = pygame.key.get_pressed()
@@ -213,10 +222,9 @@ while True:
     pygame.display.flip()
     pygame.quit
     cv.imshow('frame-1', img)
+    """
 
     if cv.waitKey(1) & 0xFF == ord('q'):
-        break
-    if not ret:
         break
 
 cap.release()
