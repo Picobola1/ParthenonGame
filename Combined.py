@@ -35,18 +35,20 @@ spawnTime = 0
 # Head Tracking Needed Variables
 cap = cv.VideoCapture(0)
 haar_cascade = cv.CascadeClassifier('haar_face.xml')
-detectedx = 0
 detectedy = 0
-widht = 0
+width = 0
 height = 0
 third = height // 3
 
 #67
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
+hands = mp_hands.Hands(max_num_hands=2, min_detection_confidence=0.7, min_tracking_confidence=0.7)
+
+running = True
+
 sixseven = False
 sensibility = 40
-cap = cv.VideoCapture(0)
 prev_y1, prev_y2 = None, None
 
 # Palm funtion for 67
@@ -56,6 +58,8 @@ def palm_up(hand):
     return middle_mcp.y < wrist.y
 
 directiony = 0
+sixseven_event = False
+sixseven_timer = 0
 
 # Elements needed for the game
 screen = pygame.display.set_mode((Width,Height))
@@ -82,12 +86,13 @@ start_y = 50
 speed = 100
 lives = 3
 
-hands = mp_hands.Hands(max_num_hands=2)
 DinoMove = True
-while True: 
+while running: 
+    print(sixseven)
     deltaTime = clock.tick(60) / 1000
     if sixseven == False:
         screen.fill((186, 149, 97))
+
     ret, img = cap.read()
     if not ret:
         break
@@ -125,20 +130,19 @@ while True:
             palms_up_list.append(palm_up(hand_landmarks))
 
             cv.circle(img, (px, py), 6, (0,255,255), -1)
+    
     if len(wrist_ponts) == 2:
         (x1, y1), (x2, y2) = wrist_ponts
-
-        cv.line(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
-
         if prev_y1 is not None and prev_y2 is not None:
             dy1 = y1 - prev_y1
             dy2 = y2 - prev_y2
-
             if abs(dy1) > sensibility or abs(dy2) > sensibility:
-                sixseven = True
+                if not sixseven_event and all(palms_up_list):
+                    sixseven_event = True
+                    sixseven_timer = 1.0
+                    lives = min(lives + 1, 3)  # Give back one life
         prev_y1, prev_y2 = y1, y2
-        print(f'sixseven= {sixseven}')
-        #sixseven = False
+
     if detectedy < third:
         directiony = 1
     elif detectedy > 2*third:
@@ -156,7 +160,7 @@ while True:
     for i in range(lives):
         screen.blit(scaled_heart, (100 + i * 40,10))
     if lives == 0:
-        pygame.quit()
+        running = False
 
     for i in range(len(catusList)):
         catusList[i] = (catusList[i][0] - speed * deltaTime, catusList[i][1])   
@@ -190,16 +194,13 @@ while True:
     if directiony == -1:
         MidpointDino += 5
 
-    if sixseven:
-        ##playsound('67.mp3')
-        random_color = random.randint(1, 255) 
-        screen.fill((random_color, random_color, random_color))
-        screen.blit(Image67, (150,Midpoint))
-        pygame.display.flip()
-        time.sleep(5)
-        pygame.display.flip()
-        sixseven = False
-        pygame.display.flip()
+    if sixseven_event:
+        sixseven_timer -= deltaTime
+        screen.blit(Image67, (150, Midpoint - 100))
+
+        if sixseven_timer <= 0:
+            sixseven_event = False
+
     """
     #if direction == 0:
         #MidpointDino = Midpoint
@@ -218,12 +219,12 @@ while True:
         
     #else:
         #direction = 0
-
-    pygame.display.flip()
-    pygame.quit
-    cv.imshow('frame-1', img)
     """
+    pygame.display.flip()
+    cv.imshow('frame-1', img)
 
+    if not running:
+        break
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
 
