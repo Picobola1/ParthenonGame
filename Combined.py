@@ -3,7 +3,9 @@ os.environ["GLOG_minloglevel"] = "3"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from absl import logging
 logging.set_verbosity(logging.ERROR)
+os.environ['SDL_VIDEO_WINDOW_POS'] = "100,300"   # (x , y)
 import pygame
+import threading
 import random
 import cv2 as cv
 import time as time
@@ -12,7 +14,7 @@ import time as time
 import mediapipe as mp
 import numpy as np
 import sys
-from playsound import playsound
+from playsound3 import playsound
 
 pygame.init()
 #class DummyFile(object):
@@ -21,7 +23,7 @@ pygame.init()
 
 #stderr_original = sys.stderr
 #sys.stderr = DummyFile()
-Width = 800
+Width = 500
 Height = 300
 last_time = 0
 clock = pygame.time.Clock()
@@ -34,13 +36,12 @@ detectedy = 0
 widht = 0
 height = 0
 third = height // 3
-
+screen = pygame.display.set_mode((Width, Height))
 #67
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 sixseven = False
 sensibility = 40
-cap = cv.VideoCapture(0)
 prev_y1, prev_y2 = None, None
 # function from 67
 def palm_up(hand):
@@ -74,9 +75,19 @@ catusList = [(400,Midpoint),(600,Midpoint),(800,Midpoint)]
 start_x = 50
 start_y = 50
 speed = 100
-lives = 3
+lives = 5
 
-hands = mp_hands.Hands(max_num_hands=2)
+meme_img_original = cv.imread('67.jpg')         # OpenCV version of the meme
+meme_window_name = "6-7"
+meme_start_time = None  
+meme_img = cv.resize(meme_img_original, (200, 200)) 
+
+hands = mp_hands.Hands(
+    max_num_hands=2,
+    model_complexity=0,             # FASTER
+    min_detection_confidence=0.6,   
+    min_tracking_confidence=0.6     
+)
 DinoMove = True
 while True: 
     deltaTime = clock.tick(60) / 1000
@@ -129,7 +140,7 @@ while True:
             if abs(dy1) > sensibility or abs(dy2) > sensibility:
                 sixseven = True
         prev_y1, prev_y2 = y1, y2
-        print(f'sixseven= {sixseven}')
+        #print(f'sixseven= {sixseven}')
         #sixseven = False
     if detectedy < third:
         directiony = 1
@@ -138,7 +149,7 @@ while True:
     else:
         directiony = 0
 
-    print(directiony)
+    #print(directiony)
     #screen.fill((48, 105, 152))
     ##this is while the game is going so infinte loop
     screen.blit(scaled_charachter, (start_x,MidpointDino))
@@ -157,7 +168,7 @@ while True:
         catusHitBox = pygame.Rect(x,y, catus.get_width(), catus.get_height())
         screen.blit(catus, (x,y))
         if dinoHitBox.colliderect(catusHitBox):
-            print("hit")
+            #print("hit")
             catusList.remove((x, y))
             lives -= 1
    
@@ -183,15 +194,20 @@ while True:
         MidpointDino += 5
 
     if sixseven:
-        ##playsound('67.mp3')
-        random_color = random.randint(1, 255) 
-        screen.fill((random_color, random_color, random_color))
-        screen.blit(Image67, (150,Midpoint))
-        pygame.display.flip()
-        time.sleep(5)
-        pygame.display.flip()
+        threading.Thread(target=playsound, args=('67.mp3',), daemon=True).start()
+        lives = min(lives+1, 5)
+        #random_color = random.randint(1, 255) 
+        #screen.fill((random_color, random_color, random_color))
+        if meme_img is not None and meme_start_time is None:
+            meme_start_time = time.time()
+            cv.imshow(meme_window_name, meme_img)
+            cv.moveWindow(meme_window_name, 0, 0)
+
+        #screen.blit(Image67, (150,Midpoint))
+        #pygame.display.flip()
+        #pygame.display.flip()
         sixseven = False
-        pygame.display.flip()
+        #pygame.display.flip()
     #if direction == 0:
         #MidpointDino = Midpoint
     #keys = pygame.key.get_pressed()
@@ -213,6 +229,10 @@ while True:
     pygame.display.flip()
     pygame.quit
     cv.imshow('frame-1', img)
+    cv.moveWindow('frame-1', 600, 100)
+    if meme_start_time is not None and time.time() - meme_start_time > 3.0:
+        cv.destroyWindow(meme_window_name)
+        meme_start_time = None
 
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
@@ -221,5 +241,3 @@ while True:
 
 cap.release()
 cv.destroyAllWindows()
-
-    
