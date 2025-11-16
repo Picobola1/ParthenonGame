@@ -13,7 +13,7 @@ import time as time
 import mediapipe as mp
 import numpy as np
 import sys
-from playsound3 import playsound
+from playsound import playsound
 
 pygame.init()
 #class DummyFile(object):
@@ -259,8 +259,10 @@ while running == True:
 
     if sixseven:
         threading.Thread(target=playsound, args=('67.mp3',), daemon=True).start()
+ 
         lives = min(lives+1, 5)
-        #random_color = random.randint(1, 255) 
+
+
         #screen.fill((random_color, random_color, random_color))
         if meme_img is not None and meme_start_time is None:
             meme_start_time = time.time()
